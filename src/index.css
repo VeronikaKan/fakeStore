@@ -1,0 +1,40 @@
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.container{
+  max-width: 1230px;
+}
+.header__link{
+  text-decoration: none;
+  color: inherit;
+  font-size: 20px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+.header__wrapper{
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+}
+ul{
+background-color: rgb(190, 190, 239);
+display: flex;
+justify-content: space-between;
+}
+.content__title{
+  display: flex;
+  justify-content: space-between;
+}
+.modal{
+  width: 200px;
+  height: 200px;
+  background-color: black;
+  color:aqua
+}
+
+.border{
+  border-bottom: solid #5B6DCD 4px;
+  color: blue;
+  font-weight: bold;
+}
