@@ -1,111 +1,105 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { NavLink } from 'react-router-dom'
+import Card from '../components/Card'
+import Modal from '../components/Modal'
+import Paginate from '../components/Paginate'
+const newCategories = {
+  electronics: 'Электроника',
+  jewelery: 'Украшения',
+  ['men\'s clothing']: 'Мужская одежда',
+  ['women\'s clothing']: 'Женская одежда',
+  all: 'Все товары'
+}
 
-const Content = () => {
- 
-  const [categories, setCategories] = useState([])
-  const [value, setValue] = useState('jewelery')
-  const [category, setCategory] = useState([])
+const Content = ({basketProducts,setBasketProducts}) => {
+  const [modal, setModal] = useState(false)
+  const [modalEl,setModalEl] = useState(0)
+  
+  const [categories, setCategories] = useState(['all'])
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [product, setProducts] = useState([])
+
   useEffect(() => {
     const getCategories = async () => {
-      let { data } = await axios('https://fakestoreapi.com/products/categories')
-      setCategories(data)
-
+      const { data } = await axios('https://fakestoreapi.com/products/categories')
+      setCategories(['all', ...data]);
     }
     getCategories()
   }, [])
-  // let newCategories = [
-  //   {
-  //     title: "электроника",
-  //     value: "electronics"
-  //   },
-  //   {
-  //     title: "Украшения",
-  //     value: "jewelery"
-  //   },
-  //   {
-  //     title: "мужская одежда",
-  //     value: "men's clothing"
-  //   },
-  //   {
-  //     title: "женская оддежда",
-  //     value: "women's clothing"
-  //   }
-  // ]
-
-  const getTitle = (key) => {
-    let title
-    switch (key) {
-      case 'electronics':
-        title = 'электроника'
-        break;
-      case "jewelery":
-        title = "Украшения"
-        break;
-      case "men's clothing":
-        title = "мужская одежда"
-        break;
-      case "women's clothing":
-        title = "женская одежда"
-        break;
-      default: title = 'одежда'
-        break
-    }
-    return title
-  }
 
   useEffect(() => {
     const getCategoriesValue = async () => {
-      console.log(!value ? '' : `/category/${value}`);
-      let { data } = await axios(`https://fakestoreapi.com/products/${!value ? '' : `/category/${value}`}`)
-      // let {data} = await axios (`https://fakestoreapi.com/products/category/${value}`)
-      setCategory(data);
+      // let { data } = await axios(`https://fakestoreapi.com/products/${selectedCategory === 'all' ? '' : `/category/${selectedCategory}`}`)
+     
+      const { data } = await axios(`https://fakestoreapi.com/products/${selectedCategory === 'all' ? '' : `/category/${selectedCategory}`}`)
+      const elements = data.map(product => 
+       product = {...product, count:1});
+      setProducts(elements);
     }
     getCategoriesValue()
-  }, [value])
-  const selectCategory = (e) => {
-    console.log(e);
-    categories.map((el) => {
-      if (el === e.target.className) {
-        setValue(e.target.className)
-      }
-    })
-  }
-
-  const handleInput = (e) => {
-    setValue(e.target.value)
-  }
-
-  return (
-
-    // <div>
-    //   <ul  value = {value} onChange={selectCategory}>
-    //     {categories.map((el,i) => (
-    //   <li key={i}  ></li>))}
-    //   </ul>
-    //   {/* <input type='text' onInput={handleInput}/> */}
-    //   {
-    //     category.map((el) => (
-    //       <p>{el.title}</p>
-    //     ))
-    //   }
+  }, [selectedCategory])
 
 
-    // </div>
+  const modalOpen = () => {
+    setModal(true)
+
+}
+    
+let res = product.filter((el) => (
+el.id === modalEl
+))
+//пагинация
+const [currentPage,setCurrentPage] = useState(1)
+const [perPage,setPerPage] = useState(4)
+const lastIndex = perPage * currentPage
+const firstIndex = lastIndex - perPage
+ const currentCards = product.slice(firstIndex, lastIndex)
+ const paginate = pageNumber => setCurrentPage(pageNumber)
+
+
+ const handlePerPage =(e) => {
+setPerPage(e.target.value)
+setCurrentPage(1)
+ }
+ const handleNextPage = () => {
+  setCurrentPage(prev=>prev+1)
+ }
+ const handlePrevPage = () => {
+  setCurrentPage(prev=>prev -1)
+ }
+  return ( 
+
 
     <>
-<div className='container'>
-      <ul >
-        {categories.map((el, index) => (
-          <li className={el === value? 'border': el} onClick={selectCategory} key={index}>{getTitle(el)}</li>
-        ))}
-      </ul>
-      {
-        category.map((el) => (
-          <p className='content__title' key={el.id}>{el.title}</p>
-        ))
-      }
+      <div className='container'>
+        
+     
+        <ul  className='header__list'>
+          {categories.map((el, index) => (
+         
+            <li className={el === selectedCategory ? 'border' : ""} onClick={() => setSelectedCategory(el)} key={index}>{newCategories[el]}</li>
+          ))}
+
+        </ul>
+
+        <p className='count'> Количество товаров: {product.length}</p>
+        <div className='content__wrapper'>
+          {
+            currentCards.map((el, i) => (
+             <Card product = {el} i = {i} modalOpen={modalOpen} setModalEl = {setModalEl} />
+            ))
+          }
+        </div>
+        
+       
+        <Modal modalOpen = {modalOpen} modal = {modal} setModal = {setModal} modalEl ={modalEl} res = {res} basketProducts = {basketProducts} setBasketProducts = {setBasketProducts} />
+        <select value = {perPage} onChange={handlePerPage} > 
+<option value="4">4</option>
+<option value="10">10</option>
+<option value="20">20</option>
+
+        </select>
+        <Paginate perPage= {perPage} totalCard = {product.length} paginate = {paginate} handleNextPage = {handleNextPage} handlePrevPage={handlePrevPage} setCurrentPage={setCurrentPage} currentPage = {currentPage}/>
       </div>
     </>
   )
